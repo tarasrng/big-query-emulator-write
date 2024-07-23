@@ -1,2 +1,4 @@
-Demonstrates issue with big query emulator when using Big Query Storage Write API.
-<p>Just run BigQueryEmulatorWriteApplicationTests</p>
+# A small example that demonstrates issue with ghcr.io/goccy/bigquery-emulator when using Big Query Storage Write API.
+
+Running test:
+`./mvnw clean install`
