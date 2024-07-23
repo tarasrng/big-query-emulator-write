@@ -1,11 +1,6 @@
 package org.example.bigqueryemulatorwrite;
 
-import com.google.cloud.NoCredentials;
-import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryOptions;
-import com.google.cloud.bigquery.DatasetInfo;
 import org.example.bigqueryemulatorwrite.repository.BigQueryRepository;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,26 +20,14 @@ import java.util.Map;
 @ActiveProfiles("test")
 class BigQueryEmulatorWriteApplicationTests {
 
+    protected static final String DATASET_NAME = "local-dataset";
+    @Container
+    protected static BigQueryEmulatorContainer bigQueryContainer = new BigQueryEmulatorContainer("ghcr.io/goccy/bigquery-emulator:0.6.3").withCommand(
+            "--log-level=debug",
+            "--project=test-project",
+            "--dataset=local-dataset");
     @Autowired
     BigQueryRepository repository;
-
-    protected static final String DATASET_NAME = "local-bigquery";
-
-    @Container
-    protected static BigQueryEmulatorContainer bigQueryContainer = new BigQueryEmulatorContainer("ghcr.io/goccy/bigquery-emulator:0.6.3");
-
-    @BeforeAll
-    static void createDataset() {
-        BigQuery bigQuery = BigQueryOptions.newBuilder()
-                .setProjectId(bigQueryContainer.getProjectId())
-                .setHost(bigQueryContainer.getEmulatorHttpEndpoint())
-                .setCredentials(NoCredentials.getInstance())
-                .build()
-                .getService();
-
-        DatasetInfo datasetInfo = DatasetInfo.newBuilder(DATASET_NAME).build();
-        bigQuery.create(datasetInfo);
-    }
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
@@ -53,7 +36,7 @@ class BigQueryEmulatorWriteApplicationTests {
         registry.add("bigquery.emulator.grpcHost", () -> String.format("%s:%d", bigQueryContainer.getHost(), bigQueryContainer.getMappedPort(9060)));
         registry.add("bigquery.emulator.dataset", () -> DATASET_NAME);
         registry.add("bigquery.emulator.table", () -> "local-table");
-        registry.add("spring.cloud.gcp.bigquery.datasetName",() -> DATASET_NAME);
+        registry.add("spring.cloud.gcp.bigquery.datasetName", () -> DATASET_NAME);
     }
 
     @Test
